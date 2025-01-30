@@ -1,72 +1,71 @@
 import { useState } from "react";
-import QuizGenerator, { Question } from "@/components/QuizGenerator";
+import QuizGenerator from "@/components/QuizGenerator";
 import QuizQuestion from "@/components/QuizQuestion";
 import QuizResult from "@/components/QuizResult";
+import { Question } from "@/components/QuizGenerator";
 
 const Index = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [showResult, setShowResult] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizFinished, setQuizFinished] = useState(false);
 
   const handleQuizGenerated = (generatedQuestions: Question[]) => {
     setQuestions(generatedQuestions);
-    setCurrentQuestion(0);
-    setAnswers([]);
-    setShowResult(false);
+    setQuizStarted(true);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizFinished(false);
   };
 
   const handleAnswer = (answer: string) => {
-    const newAnswers = [...answers, answer];
-    setAnswers(newAnswers);
+    if (answer === questions[currentQuestionIndex].correctAnswer) {
+      setScore((prev) => prev + 1);
+    }
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      const score = newAnswers.reduce((acc, curr, idx) => {
-        return curr === questions[idx].correctAnswer ? acc + 1 : acc;
-      }, 0);
-      setShowResult(true);
+      setQuizFinished(true);
     }
   };
 
   const handleRestart = () => {
+    setQuizStarted(false);
+    setQuizFinished(false);
     setQuestions([]);
-    setCurrentQuestion(0);
-    setAnswers([]);
-    setShowResult(false);
+    setCurrentQuestionIndex(0);
+    setScore(0);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12">
-      <div className="container">
-        {questions.length === 0 && (
-          <>
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                Gerador de Provas com IA
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Crie provas personalizadas instantaneamente e ganhe certificados baseados no seu desempenho
-              </p>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8 text-primary">
+          Plataforma de Certificações em Tecnologia
+        </h1>
+
+        {!quizStarted && !quizFinished && (
+          <QuizGenerator onQuizGenerated={handleQuizGenerated} />
+        )}
+
+        {quizStarted && !quizFinished && questions[currentQuestionIndex] && (
+          <div className="mb-4">
+            <div className="text-right mb-4 text-sm text-gray-600">
+              Questão {currentQuestionIndex + 1} de {questions.length}
             </div>
-            <QuizGenerator onQuizGenerated={handleQuizGenerated} />
-          </>
+            <QuizQuestion
+              question={questions[currentQuestionIndex]}
+              onAnswer={handleAnswer}
+              isLast={currentQuestionIndex === questions.length - 1}
+            />
+          </div>
         )}
 
-        {questions.length > 0 && !showResult && (
-          <QuizQuestion
-            question={questions[currentQuestion]}
-            onAnswer={handleAnswer}
-            isLast={currentQuestion === questions.length - 1}
-          />
-        )}
-
-        {showResult && (
+        {quizFinished && (
           <QuizResult
-            score={answers.reduce((acc, curr, idx) => {
-              return curr === questions[idx].correctAnswer ? acc + 1 : acc;
-            }, 0)}
+            score={score}
             totalQuestions={questions.length}
             onRestart={handleRestart}
           />

@@ -1,9 +1,6 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain } from "lucide-react";
+import QuizTheme from "./QuizTheme";
 
 interface QuizGeneratorProps {
   onQuizGenerated: (questions: Question[]) => void;
@@ -16,27 +13,65 @@ export interface Question {
   correctAnswer: string;
 }
 
+const themes = [
+  {
+    id: 1,
+    theme: "Cibersegurança Básica",
+    icon: "shield",
+    description: "Fundamentos de segurança digital e proteção de dados",
+    difficulty: "Fácil",
+  },
+  {
+    id: 2,
+    theme: "Programação Web",
+    icon: "code",
+    description: "HTML, CSS, JavaScript e frameworks modernos",
+    difficulty: "Médio",
+  },
+  {
+    id: 3,
+    theme: "Redes e Infraestrutura",
+    icon: "network",
+    description: "Protocolos, arquitetura e segurança de redes",
+    difficulty: "Difícil",
+  },
+  {
+    id: 4,
+    theme: "Segurança Avançada",
+    icon: "lock",
+    description: "Criptografia, pentest e análise de vulnerabilidades",
+    difficulty: "Difícil",
+  },
+];
+
 const QuizGenerator = ({ onQuizGenerated }: QuizGeneratorProps) => {
-  const [topic, setTopic] = useState("");
-  const [numQuestions, setNumQuestions] = useState("5");
-  const [difficulty, setDifficulty] = useState("medium");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateQuiz = async () => {
+  const generateQuiz = async (themeId: number) => {
     setIsGenerating(true);
     // Simulando geração de questões com IA (substitua por integração real depois)
     const mockQuestions: Question[] = [
       {
         id: 1,
-        question: "Qual é a capital do Brasil?",
-        options: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
-        correctAnswer: "Brasília",
+        question: "Qual é a principal função de um firewall?",
+        options: [
+          "Acelerar a conexão com a internet",
+          "Controlar o tráfego de rede e proteger contra ameaças",
+          "Armazenar senhas de forma segura",
+          "Criar backups automáticos",
+        ],
+        correctAnswer: "Controlar o tráfego de rede e proteger contra ameaças",
       },
       {
         id: 2,
-        question: "Quem pintou a Mona Lisa?",
-        options: ["Van Gogh", "Leonardo da Vinci", "Picasso", "Michelangelo"],
-        correctAnswer: "Leonardo da Vinci",
+        question: "O que é um ataque de phishing?",
+        options: [
+          "Um vírus que corrompe arquivos",
+          "Uma tentativa de enganar usuários para obter dados sensíveis",
+          "Um problema de hardware",
+          "Uma falha de conexão",
+        ],
+        correctAnswer: "Uma tentativa de enganar usuários para obter dados sensíveis",
       },
     ];
     
@@ -47,59 +82,27 @@ const QuizGenerator = ({ onQuizGenerated }: QuizGeneratorProps) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg">
+    <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <Brain className="w-6 h-6 text-primary" />
-        <h2 className="text-2xl font-bold text-gray-800">Gerador de Prova</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Escolha um Tema</h2>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="topic">Tópico</Label>
-          <Input
-            id="topic"
-            placeholder="Ex: História do Brasil"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {themes.map((theme) => (
+          <QuizTheme
+            key={theme.id}
+            {...theme}
+            onClick={() => !isGenerating && generateQuiz(theme.id)}
           />
-        </div>
-
-        <div>
-          <Label htmlFor="difficulty">Dificuldade</Label>
-          <Select value={difficulty} onValueChange={setDifficulty}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione a dificuldade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="easy">Fácil</SelectItem>
-              <SelectItem value="medium">Médio</SelectItem>
-              <SelectItem value="hard">Difícil</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="questions">Número de Questões</Label>
-          <Select value={numQuestions} onValueChange={setNumQuestions}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o número de questões" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 questões</SelectItem>
-              <SelectItem value="10">10 questões</SelectItem>
-              <SelectItem value="15">15 questões</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button 
-          className="w-full"
-          onClick={generateQuiz}
-          disabled={!topic || isGenerating}
-        >
-          {isGenerating ? "Gerando..." : "Gerar Prova"}
-        </Button>
+        ))}
       </div>
+
+      {isGenerating && (
+        <div className="text-center text-gray-600">
+          Gerando questões personalizadas...
+        </div>
+      )}
     </div>
   );
 };
